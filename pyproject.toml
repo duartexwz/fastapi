@@ -44,7 +44,8 @@ addopts = '-p no:warnings'
 [tool.taskipy.tasks]
 lint = "ruff check"
 format = "ruff format"
-test = "pytest --cov=api --cov-report=xml"
+run = "fastapi dev api/app.py"
+test = "pytest --cov=api -vv"
 pre_format = "ruff check --fix"
-pre_test = "ruff lint"
+pre_test = "ruff check"
 post_test = "coverage html"
