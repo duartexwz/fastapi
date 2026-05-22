@@ -5,7 +5,7 @@ from sqlalchemy import select
 from api.models import User
 
 
-def test_create_user(session, mock_db_time):
+def test_model_create_user(session, mock_db_time):
     with mock_db_time(model=User) as time:
         new_user = User(
             username='Maria Eduarda', email='ms.mariasilva@gmail.com', password='123456'
@@ -22,4 +22,5 @@ def test_create_user(session, mock_db_time):
         'email': 'ms.mariasilva@gmail.com',
         'password': '123456',
         'created_at': time,
+        'update_at': time,
     }
