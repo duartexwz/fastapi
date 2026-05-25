@@ -123,7 +123,7 @@ def test_username_already_exists(client):
         '/users',
         json={
             'username': 'Usuario Teste',
-            'email': 'teste@gmail.com',
+            'email': 'email@gmail.com',
             'password': '123456',
         },
     )
@@ -136,7 +136,7 @@ def test_email_already_exists(client):
     client.post(
         '/users',
         json={
-            'username': 'JoaoTesteValidacao',
+            'username': 'Usuário Teste',
             'email': 'teste@123.com',
             'password': '123456',
         },
