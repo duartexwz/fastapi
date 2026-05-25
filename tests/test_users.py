@@ -3,15 +3,13 @@ from http import HTTPStatus
 from fastapi.testclient import TestClient
 
 from api.app import app
-from api.schemas import UserResponseSchema
-
-client = TestClient(app)
+from api.security import create_acess_token
 
 
 def test_create_user(client):
     client = TestClient(app)
     response = client.post(
-        '/users',
+        '/users/',
         json={
             'username': 'Mayckon',
             'email': 'mayckonkennedy877@gmail.com',
@@ -33,9 +31,10 @@ def test_read_users(client):
     assert response.json() == {'users': []}
 
 
-def test_update_user(client, user):
+def test_update_user(client, user, token):
     response = client.put(
         f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'Maria Eduarda',
             'email': 'ms.mariasilva@gmail.com',
@@ -48,20 +47,23 @@ def test_update_user(client, user):
     assert response.json() == {
         'username': 'Maria Eduarda',
         'email': 'ms.mariasilva@gmail.com',
-        'id': 1,
+        'id': user.id,
     }
 
 
-def test_delete_user(client, user):
-    response = client.delete('/users/1')
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_update_user_not_found(client):
+def test_update_user_not_found(client, user, token):
     response = client.put(
-        '/users/999',
+        f'/users/{user.id + 1}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'Eduardo de Carvalho',
             'email': 'dudu@gmail.com',
@@ -73,45 +75,45 @@ def test_update_user_not_found(client):
     assert response.json() == {'detail': 'User not found'}
 
 
-def test_delete_user_not_found(client):
-    response = client.delete('/users/999')
+def test_update_user_not_permission(client, token):
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
-
-
-def test_read_users_with_users(client, user):
-    user_schema = UserResponseSchema.model_validate(user).model_dump()
-    response = client.get('/users/')
-    assert response.json() == {'users': [user_schema]}
-
-
-def test_update_integrity_error(client, user):
-    client.post(
-        '/users',
+    response_post = client.post(
+        '/users/',
         json={
-            'username': 'Welliton',
-            'email': 'wellitonduarte@gmail.com',
+            'username': 'outro_usuario',
+            'email': 'teste@gmail.com',
+            'password': '123',
+        },
+    )
+
+    outro_usuario = response_post.json()
+
+    response = client.put(
+        f'/users/{outro_usuario["id"]}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'Eduardo de Carvalho',
+            'email': 'dudu@gmail.com',
             'password': '123456',
         },
     )
 
-    response_update = client.put(
-        f'/users/{user.id}',
-        json={
-            'username': 'Welliton',
-            'email': 'ms.mariasilva@gmail.com',
-            'password': 'mypassword_test',
-        },
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
+def test_delete_user_not_found(client, user, token):
+    response = client.delete(
+        f'/users/{user.id + 1}',
+        headers={'Authorization': f'Bearer {token}'},
     )
 
-    assert response_update.status_code == HTTPStatus.CONFLICT
-    assert response_update.json() == {'detail': 'Username or Email already exists'}
-
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 def test_username_already_exists(client):
     client.post(
-        '/users',
+        '/users/',
         json={
             'username': 'Usuario Teste',
             'email': 'teste@gmail.com',
@@ -120,7 +122,7 @@ def test_username_already_exists(client):
     )
 
     response_exists = client.post(
-        '/users',
+        '/users/',
         json={
             'username': 'Usuario Teste',
             'email': 'email@gmail.com',
@@ -134,7 +136,7 @@ def test_username_already_exists(client):
 
 def test_email_already_exists(client):
     client.post(
-        '/users',
+        '/users/',
         json={
             'username': 'Usuário Teste',
             'email': 'teste@123.com',
@@ -143,7 +145,7 @@ def test_email_already_exists(client):
     )
 
     response_email_exists = client.post(
-        '/users',
+        '/users/',
         json={
             'username': 'Jose',
             'email': 'teste@123.com',
@@ -153,3 +155,41 @@ def test_email_already_exists(client):
 
     assert response_email_exists.status_code == HTTPStatus.CONFLICT
     assert response_email_exists.json() == {'detail': 'Email already exists'}
+
+
+def test_update_integrity_error(client, user, token):
+    client.post(
+        '/users/',
+        # headers={'Authorization', f'Bearer {token}'},
+        json={
+            'username': 'Jõao',
+            'email': 'mayckonkennedy877@gmail.com',
+            'password': 'testepassword',
+        },
+    )
+
+    response_update = client.put(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'João',
+            'email': 'mayckonkennedy877@gmail.com',
+            'password': 'mynewpassword',
+        },
+    )
+
+    assert response_update.status_code == HTTPStatus.CONFLICT
+    assert response_update.json() == {'detail': 'Username or Email already exists'}
+
+
+def test_get_current_user_not_found(client):
+    data = {'no-email': 'test'}
+    token = create_acess_token(data)
+
+    response = client.delete(
+        '/users/1',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}

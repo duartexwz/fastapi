@@ -3,6 +3,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict  # pragma: no cov
 
 
 class Settings(BaseSettings):  # pragma: no cover
-    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        env_file_encoding='utf-8',
+    )
 
     DATABASE_URL: str = Field(init=False)
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACESS_TOKEN_EXPIRE_MINUTES: int

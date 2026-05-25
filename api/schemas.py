@@ -20,3 +20,13 @@ class UserDB(UserSchema):
 
 class UserList(BaseModel):
     users: list[UserResponseSchema]
+
+
+class Token(BaseModel):
+    acess_token: str
+    token_type: str
+
+
+class FilterPage(BaseModel):
+    offset: int = 0
+    limit: int = 0
