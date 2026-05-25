@@ -111,6 +111,7 @@ def test_delete_user_not_found(client, user, token):
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert response.json() == {'detail': 'Not enough permissions'}
 
+
 def test_username_already_exists(client):
     client.post(
         '/users/',

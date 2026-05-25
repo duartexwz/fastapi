@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from api.settings import Settings
 
-engine = create_engine(Settings().DATABASE_URL)
+engine = create_engine(Settings().DATABASE_URL) # pyright: ignore[reportCallIssue]
 
 
 def get_session():

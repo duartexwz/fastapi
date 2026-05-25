@@ -13,7 +13,7 @@ from api.database import get_session
 from api.models import User
 from api.settings import Settings
 
-settings = Settings()
+settings = Settings() # pyright: ignore[reportCallIssue]
 
 
 pwd_context = PasswordHash.recommended()
