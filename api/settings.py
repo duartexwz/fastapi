@@ -12,3 +12,5 @@ class Settings(BaseSettings):  # pragma: no cover
     SECRET_KEY: str
     ALGORITHM: str
     ACESS_TOKEN_EXPIRE_MINUTES: int
+    CLIENT_ID: str
+    CLIENT_SECRET: str

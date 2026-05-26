@@ -3,17 +3,17 @@ from http import HTTPStatus
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2AuthorizationCodeBearer
+from fastapi.security import OAuth2PasswordBearer
 from jwt import DecodeError, decode, encode
 from pwdlib import PasswordHash
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.database import get_session
 from api.models import User
 from api.settings import Settings
 
-settings = Settings() # pyright: ignore[reportCallIssue]
+settings = Settings()  # pyright: ignore[reportCallIssue]
 
 
 pwd_context = PasswordHash.recommended()
@@ -38,13 +38,11 @@ def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    authorizationUrl='/authorize', tokenUrl='auth/token'
-)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
 
 
-def get_current_user(
-    session: Session = Depends(get_session),
+async def get_current_user(
+    session: AsyncSession = Depends(get_session),
     token: str = Depends(oauth2_scheme),
 ):
     credentials_exception = HTTPException(
@@ -63,7 +61,7 @@ def get_current_user(
     except DecodeError:
         raise credentials_exception
 
-    user = session.scalar(select(User).where(User.email == subject_email))
+    user = await session.scalar(select(User).where(User.email == subject_email))
 
     if not user:
         raise credentials_exception
