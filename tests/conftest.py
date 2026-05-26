@@ -42,14 +42,16 @@ async def session():
         await conn.run_sync(table_registry.metadata.drop_all)
 
 
-@pytest.fixture
-def client(session):
+@pytest_asyncio.fixture
+async def client(session):
+    # TestClient is synchronous, so we must not pass async generators incorrectly.
+    # We still override get_session to return the already-created AsyncSession.
     def get_session_override():
         return session
 
-    with TestClient(app) as client:
+    with TestClient(app) as test_client:
         app.dependency_overrides[get_session] = get_session_override
-        yield client
+        yield test_client
     app.dependency_overrides.clear()
 
 
@@ -108,4 +110,4 @@ def token(client, user):
         '/auth/token',
         data={'username': user.email, 'password': user.clean_password},
     )
-    return response.json()['acess_token']
+    return response.json()['access_token']

@@ -38,13 +38,14 @@ def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/token')
 
 
 async def get_current_user(
     session: AsyncSession = Depends(get_session),
     token: str = Depends(oauth2_scheme),
 ):
+
     credentials_exception = HTTPException(
         status_code=HTTPStatus.UNAUTHORIZED,
         detail='Could not validate credentials',

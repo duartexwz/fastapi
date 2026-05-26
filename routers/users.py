@@ -14,6 +14,7 @@ from api.security import get_current_user, get_password_hash
 router = APIRouter(prefix='/users', tags=['users'])
 T_Session = Annotated[AsyncSession, Depends(get_session)]
 T_CurrentUser = Annotated[User, Depends(get_current_user)]
+# oauth2 = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserResponseSchema)
@@ -60,7 +61,7 @@ async def read_users(session: T_Session, filter_users: Annotated[FilterPage, Que
 @router.put('/{user_id}', response_model=UserResponseSchema)
 async def update_user(
     user_id: int,
-    user: UserSchema,
+    user_data: UserSchema,
     session: T_Session,
     current_user: T_CurrentUser,
 ):
@@ -77,9 +78,9 @@ async def update_user(
         )
 
     try:
-        db_user.username = user.username
-        db_user.email = user.email
-        db_user.password = get_password_hash(user.password)
+        db_user.username = user_data.username
+        db_user.email = user_data.email
+        db_user.password = get_password_hash(user_data.password)
         await session.commit()
         await session.refresh(db_user)
 
@@ -88,7 +89,7 @@ async def update_user(
             status_code=HTTPStatus.CONFLICT, detail='Username or Email already exists'
         )
 
-    return current_user
+    return db_user
 
 
 @router.delete('/{user_id}', status_code=HTTPStatus.OK)
@@ -106,18 +107,3 @@ async def delete_user(
     await session.commit()
 
     return {'message': 'User deleted'}
-
-
-def test_update_user_with_wrong_user(client, user, token):
-    response = client.put(
-        f'/users/{user.id + 1}',
-        headers={'Authorization': f'Bearer {token}'},
-        json={
-            'username': 'Duarte',
-            'email': 'duarte@gmail.com',
-            'password': '123456',
-        },
-    )
-
-    assert response.status_code == HTTPStatus.FORBIDDEN
-    assert response.json() == {'detail': 'Not enough permissions'}

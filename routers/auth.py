@@ -37,11 +37,11 @@ async def login_for_acess_token(
 
     acess_token = create_acess_token(data={'sub': user.email})
 
-    return {'acess_token': acess_token, 'token_type': 'bearer'}
+    return {'access_token': acess_token, 'token_type': 'bearer'}
 
 
 @router.post('/refresh_token', response_model=Token)
 async def refresh_acess_token(user: CurrentUser):
     new_acess_token = create_acess_token(data={'sub': user.email})
 
-    return {'acess_token': new_acess_token, 'token_type': 'bearer'}
+    return {'access_token': new_acess_token, 'token_type': 'bearer'}

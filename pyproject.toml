@@ -56,7 +56,7 @@ asyncio_default_fixture_loop_scope = 'function'
 lint = "ruff check"
 format = "ruff format"
 run = "fastapi dev api/app.py"
-test = "pytest --cov=api --cov=routers --cov-report=term-missing"
+test = "pytest --cov=api --cov=routers -vv"
 pre_format = "ruff check --fix"
 pre_test = "ruff check"
 post_test = "coverage html"
