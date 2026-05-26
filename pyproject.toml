@@ -29,7 +29,9 @@ dev = [
     "pytest-cov (>=7.1.0,<8.0.0)",
     "taskipy (>=1.14.1,<2.0.0)",
     "pytest-random-order (>=1.2.0,<2.0.0)",
-    "pytest-asyncio (>=1.4.0,<2.0.0)"
+    "pytest-asyncio (>=1.4.0,<2.0.0)",
+    "factory-boy (>=3.3.3,<4.0.0)",
+    "freezegun (>=1.5.5,<2.0.0)"
 ]
 
 [tool.ruff]
@@ -45,7 +47,7 @@ preview = true
 quote-style = 'single'
 
 [tool.pytest.ini_options]
-pythonpath = '.'
+pythonpath = ['.']
 addopts = ['-p', 'no:warnings', '--random-order', ]
 asyncio_default_fixture_loop_scope = 'function'
 
@@ -54,7 +56,10 @@ asyncio_default_fixture_loop_scope = 'function'
 lint = "ruff check"
 format = "ruff format"
 run = "fastapi dev api/app.py"
-test = "pytest --cov=api --cov=routers -vv"
+test = "pytest --cov=api --cov=routers --cov-report=term-missing"
 pre_format = "ruff check --fix"
 pre_test = "ruff check"
 post_test = "coverage html"
+
+[tool.coverage.run]
+source = ["api", "routers"]

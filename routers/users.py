@@ -65,6 +65,7 @@ async def update_user(
     current_user: T_CurrentUser,
 ):
     db_user = await session.scalar(select(User).where(User.id == user_id))
+
     if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
@@ -105,3 +106,18 @@ async def delete_user(
     await session.commit()
 
     return {'message': 'User deleted'}
+
+
+def test_update_user_with_wrong_user(client, user, token):
+    response = client.put(
+        f'/users/{user.id + 1}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'Duarte',
+            'email': 'duarte@gmail.com',
+            'password': '123456',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
