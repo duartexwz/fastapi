@@ -158,29 +158,19 @@ def test_email_already_exists(client):
     assert response_email_exists.json() == {'detail': 'Email already exists'}
 
 
-def test_update_integrity_error(client, user, token):
-    client.post(
-        '/users/',
-        # headers={'Authorization', f'Bearer {token}'},
+def test_update_integrity_error(client, user, other_user, token):
+    response = client.put(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
-            'username': 'Jõao',
+            'username': other_user.username,
             'email': 'mayckonkennedy877@gmail.com',
             'password': 'testepassword',
         },
     )
 
-    response_update = client.put(
-        f'/users/{user.id}',
-        headers={'Authorization': f'Bearer {token}'},
-        json={
-            'username': 'João',
-            'email': 'mayckonkennedy877@gmail.com',
-            'password': 'mynewpassword',
-        },
-    )
-
-    assert response_update.status_code == HTTPStatus.CONFLICT
-    assert response_update.json() == {'detail': 'Username or Email already exists'}
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Username or Email already exists'}
 
 
 def test_get_current_user_not_found(client):

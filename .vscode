@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "C:/Users/mayckon.duarte/AppData/Local/pypoetry/Cache/virtualenvs/api-cqXn29X7-py3.13/Lib/site-packages"
+    ],
+    "python.analysis.indexing": true,
+    "python.analysis.typeCheckingMode": "basic"
+}
