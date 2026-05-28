@@ -11,6 +11,6 @@ class Settings(BaseSettings):  # pragma: no cover
     DATABASE_URL: str = Field(init=False)
     SECRET_KEY: str
     ALGORITHM: str
-    ACESS_TOKEN_EXPIRE_MINUTES: int
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
     CLIENT_ID: str
     CLIENT_SECRET: str
