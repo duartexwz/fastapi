@@ -31,7 +31,7 @@ class Token(BaseModel):
 
 class FilterPage(BaseModel):
     offset: int = 0
-    limit: int = 0
+    limit: int = 10
 
 
 class TodoSchema(BaseModel):

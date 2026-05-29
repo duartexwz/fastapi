@@ -54,7 +54,7 @@ async def test_list_todos_should_return_2_todos(client, session, user, token):
     await session.commit()
 
     response = client.get(
-        '/todos/?offset=1&limit-2', headers={'Authorization': f'Bearer {token}'}
+        '/todos/?offset=0&limit-2', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert len(response.json()['todos']) == expected_todos
