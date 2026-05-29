@@ -26,14 +26,10 @@ async def login_for_acess_token(
     user = await session.scalar(select(User).where(User.email == form_data.username))
 
     if not user:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED, detail='Incorrect email or password'
-        )
+        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail='Incorrect email or password')
 
     if not verify_password(form_data.password, user.password):
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED, detail='Incorrect email or password'
-        )
+        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail='Incorrect email or password')
 
     access_token = create_access_token(data={'sub': user.email})
 

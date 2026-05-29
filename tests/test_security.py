@@ -1,13 +1,14 @@
 from http import HTTPStatus
 
+import pytest
 from jwt import decode
 
-from api.security import create_acess_token, settings
+from api.security import create_access_token, settings
 
 
 def test_jwt():
     data = {'test': 'test'}
-    token = create_acess_token(data)
+    token = create_access_token(data)
 
     decoded = decode(token, settings.SECRET_KEY, algorithms=['HS256'])
 
@@ -15,10 +16,9 @@ def test_jwt():
     assert 'exp' in decoded
 
 
-def test_jwt_invalid_token(client):
-    response = client.delete(
-        '/users/1', headers={'Authorization': 'Bearer token-invalido'}
-    )
+@pytest.mark.asyncio
+async def test_jwt_invalid_token(client):
+    response = await client.delete('/users/1', headers={'Authorization': 'Bearer token-invalido'})
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json() == {'detail': 'Could not validate credentials'}

@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
+from api.models import TodoState
 
 
 class UserSchema(BaseModel):
@@ -29,4 +31,28 @@ class Token(BaseModel):
 
 class FilterPage(BaseModel):
     offset: int = 0
-    limit: int = 0
+    limit: int = 10
+
+
+class TodoSchema(BaseModel):
+    title: str
+    description: str
+    state: TodoState = Field(default=TodoState.todo)
+
+
+class TodoPublic(TodoSchema):
+    id: int
+
+
+class FilterTodo(FilterPage):
+    title: str | None = Field(default=None, min_length=3, max_length=30)
+    description: str | None = None
+    state: TodoState | None = None
+
+
+class TodoList(BaseModel):
+    todos: list[TodoPublic]
+
+
+class Message(BaseModel):
+    message: str

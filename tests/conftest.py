@@ -4,7 +4,7 @@ from datetime import datetime
 import factory
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
@@ -27,9 +27,7 @@ class UserFactory(factory.Factory):  # type: ignore
 @pytest_asyncio.fixture
 async def session():
     engine = create_async_engine(
-        'sqlite+aiosqlite:///:memory:',
-        connect_args={'check_same_thread': False},
-        poolclass=StaticPool,
+        'sqlite+aiosqlite:///:memory:', connect_args={'check_same_thread': False}, poolclass=StaticPool, echo=True
     )
 
     async with engine.begin() as conn:
@@ -42,15 +40,21 @@ async def session():
         await conn.run_sync(table_registry.metadata.drop_all)
 
 
-@pytest.fixture
-def client(session):
-    def get_session_override():
+@pytest_asyncio.fixture
+async def client(session):
+    async def get_session_override():
         return session
 
-    with TestClient(app) as client:
-        app.dependency_overrides[get_session] = get_session_override
-        yield client
+    app.dependency_overrides[get_session] = get_session_override
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as ac:
+        yield ac
+
     app.dependency_overrides.clear()
+    # with TestClient(app) as client:
+    #     app.dependency_overrides[get_session] = get_session_override
+    #     yield client
+    # app.dependency_overrides.clear()
 
 
 @contextmanager
@@ -102,9 +106,9 @@ async def other_user(session):
     return user
 
 
-@pytest.fixture
-def token(client, user):
-    response = client.post(
+@pytest_asyncio.fixture
+async def token(client, user):
+    response = await client.post(
         '/auth/token',
         data={'username': user.email, 'password': user.clean_password},
     )

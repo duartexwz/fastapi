@@ -1,14 +1,13 @@
 from http import HTTPStatus
 
-from fastapi.testclient import TestClient
+import pytest
 
-from api.app import app
-from api.security import create_acess_token
+from api.security import create_access_token
 
 
-def test_create_user(client):
-    client = TestClient(app)
-    response = client.post(
+@pytest.mark.asyncio
+async def test_create_user(client):
+    response = await client.post(
         '/users/',
         json={
             'username': 'Mayckon',
@@ -24,15 +23,17 @@ def test_create_user(client):
     }
 
 
-def test_read_users(client):
-    response = client.get('/users/')
+@pytest.mark.asyncio
+async def test_read_users(client):
+    response = await client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'users': []}
 
 
-def test_update_user(client, user, token):
-    response = client.put(
+@pytest.mark.asyncio
+async def test_update_user(client, user, token):
+    response = await client.put(
         f'/users/{user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
@@ -51,17 +52,17 @@ def test_update_user(client, user, token):
     }
 
 
-def test_delete_user(client, user, token):
-    response = client.delete(
-        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
-    )
+@pytest.mark.asyncio
+async def test_delete_user(client, user, token):
+    response = await client.delete(f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'})
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_update_user_not_found(client, user, token):
-    response = client.put(
+@pytest.mark.asyncio
+async def test_update_user_not_found(client, user, token):
+    response = await client.put(
         f'/users/{user.id + 1}',
         headers={'Authorization': f'Bearer {token}'},
         json={
@@ -75,9 +76,10 @@ def test_update_user_not_found(client, user, token):
     assert response.json() == {'detail': 'User not found'}
 
 
-def test_update_user_not_permission(client, token):
+@pytest.mark.asyncio
+async def test_update_user_not_permission(client, token):
 
-    response_post = client.post(
+    response_post = await client.post(
         '/users/',
         json={
             'username': 'outro_usuario',
@@ -88,7 +90,7 @@ def test_update_user_not_permission(client, token):
 
     outro_usuario = response_post.json()
 
-    response = client.put(
+    response = await client.put(
         f'/users/{outro_usuario["id"]}',
         headers={'Authorization': f'Bearer {token}'},
         json={
@@ -102,8 +104,9 @@ def test_update_user_not_permission(client, token):
     assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_delete_user_not_found(client, user, token):
-    response = client.delete(
+@pytest.mark.asyncio
+async def test_delete_user_not_found(client, user, token):
+    response = await client.delete(
         f'/users/{user.id + 1}',
         headers={'Authorization': f'Bearer {token}'},
     )
@@ -112,8 +115,9 @@ def test_delete_user_not_found(client, user, token):
     assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_username_already_exists(client):
-    client.post(
+@pytest.mark.asyncio
+async def test_username_already_exists(client):
+    await client.post(
         '/users/',
         json={
             'username': 'Usuario Teste',
@@ -122,7 +126,7 @@ def test_username_already_exists(client):
         },
     )
 
-    response_exists = client.post(
+    response_exists = await client.post(
         '/users/',
         json={
             'username': 'Usuario Teste',
@@ -135,8 +139,9 @@ def test_username_already_exists(client):
     assert response_exists.json() == {'detail': 'Username already exists'}
 
 
-def test_email_already_exists(client):
-    client.post(
+@pytest.mark.asyncio
+async def test_email_already_exists(client):
+    await client.post(
         '/users/',
         json={
             'username': 'Usuário Teste',
@@ -145,7 +150,7 @@ def test_email_already_exists(client):
         },
     )
 
-    response_email_exists = client.post(
+    response_email_exists = await client.post(
         '/users/',
         json={
             'username': 'Jose',
@@ -158,8 +163,9 @@ def test_email_already_exists(client):
     assert response_email_exists.json() == {'detail': 'Email already exists'}
 
 
-def test_update_integrity_error(client, user, token):
-    client.post(
+@pytest.mark.asyncio
+async def test_update_integrity_error(client, user, token):
+    await client.post(
         '/users/',
         # headers={'Authorization', f'Bearer {token}'},
         json={
@@ -169,7 +175,7 @@ def test_update_integrity_error(client, user, token):
         },
     )
 
-    response_update = client.put(
+    response_update = await client.put(
         f'/users/{user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
@@ -183,11 +189,12 @@ def test_update_integrity_error(client, user, token):
     assert response_update.json() == {'detail': 'Username or Email already exists'}
 
 
-def test_get_current_user_not_found(client):
+@pytest.mark.asyncio
+async def test_get_current_user_not_found(client):
     data = {'no-email': 'test'}
-    token = create_acess_token(data)
+    token = create_access_token(data)
 
-    response = client.delete(
+    response = await client.delete(
         '/users/1',
         headers={'Authorization': f'Bearer {token}'},
     )
@@ -196,8 +203,9 @@ def test_get_current_user_not_found(client):
     assert response.json() == {'detail': 'Could not validate credentials'}
 
 
-def test_update_user_with_wrong_user(client, other_user, token):
-    response = client.put(
+@pytest.mark.asyncio
+async def test_update_user_with_wrong_user(client, other_user, token):
+    response = await client.put(
         f'/users/{other_user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
@@ -211,8 +219,9 @@ def test_update_user_with_wrong_user(client, other_user, token):
     assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_delete_wrong_user(client, other_user, token):
-    response = client.delete(
+@pytest.mark.asyncio
+async def test_delete_wrong_user(client, other_user, token):
+    response = await client.delete(
         f'/users/{other_user.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
