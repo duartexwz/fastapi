@@ -52,14 +52,14 @@ addopts = ['-p', 'no:warnings', '--random-order', ]
 asyncio_default_fixture_loop_scope = 'function'
 
 
+[tool.coverage.run]
+concurrency = ["greenlet", "thread"]
+
 [tool.taskipy.tasks]
 lint = "ruff check"
 format = "ruff format"
 run = "fastapi dev api/app.py"
-test = "pytest --cov=api --cov=routers -vv"
+test = "pytest -s -x --cov=api  -vv"
 pre_format = "ruff check --fix"
-pre_test = "ruff check"
+pre_test = "ruff check; ruff format" 
 post_test = "coverage html"
-
-[tool.coverage.run]
-source = ["api", "routers"]
