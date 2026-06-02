@@ -56,3 +56,9 @@ class TodoList(BaseModel):
 
 class Message(BaseModel):
     message: str
+
+
+class TodoUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    state: TodoState | None = None

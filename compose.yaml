@@ -1,0 +1,24 @@
+services:
+  api_database:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin.admin
+      POSTGRES_DB: api_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  fastapi_app:
+    image: fastapi_app
+    build: .
+    entrypoint: ./entrypoint.sh 
+    ports: 
+      - "8000:8000"
+    depends_on:
+      - api_database
+    environment:
+      DATABASE_URL: "postgresql+psycopg://postgres:admin.admin@api_database:5432/api_db"
+
+volumes:
+  pgdata:

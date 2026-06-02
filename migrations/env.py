@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from api.settings import Settings
 from api.models import table_registry
 from alembic import context
+import selectors
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -71,7 +72,8 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    asyncio.run(run_async_migrations())
+    
+    asyncio.run(run_async_migrations(), loop_factory=asyncio.SelectorEventLoop)
 
 
 if context.is_offline_mode():
