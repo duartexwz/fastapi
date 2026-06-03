@@ -1,0 +1,12 @@
+name: Pipeline
+on: [push, pull_request]
+
+jobs:
+  test:
+    run-on: ubuntu-latest
+
+    steps:
+      - name: Instalar o pyhton
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
