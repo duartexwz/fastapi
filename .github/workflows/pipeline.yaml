@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   test:
-    run-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Instalar o pyhton
