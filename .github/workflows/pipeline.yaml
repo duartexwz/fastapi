@@ -17,5 +17,5 @@ jobs:
       - name: Configurar o poetry
         run: poetry install 
 
-      -name: Rodar os testes
+      - name: Rodar os testes
         run: poetry run task test 
